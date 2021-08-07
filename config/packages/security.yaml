@@ -44,7 +44,6 @@ security:
                 interval: '15 minutes'
                 limiter: app.login_rate_limiter
         main:
-            anonymous: true
             lazy: true
             provider: app_user_provider
             login_throttling:
