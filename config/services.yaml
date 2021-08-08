@@ -15,11 +15,41 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
-        exclude:
-            - '../src/DependencyInjection/'
-            - '../src/Entity/'
-            - '../src/Kernel.php'
-            - '../src/Tests/'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    Symfony\Component\HttpFoundation\Request:
+    
+    Symfony\Component\Serializer\Encoder\JsonEncoder:
+        class: Symfony\Component\Serializer\Encoder\JsonEncoder
+
+    Symfony\Component\Serializer\SerializerInterface:
+        class: Symfony\Component\Serializer\Serializer
+        arguments: [
+            ["@Symfony\\Component\\Serializer\\Normalizer\\ObjectNormalizer"],
+            ["@Symfony\\Component\\Serializer\\Encoder\\JsonEncoder"]
+        ]
+
+    App\Controller\RegisterController:
+        public: true
+        arguments: [
+            "@Symfony\\Component\\Validator\\Validator\\ValidatorInterface",
+            "@Symfony\\Component\\Serializer\\SerializerInterface",
+            "@Symfony\\Component\\HttpFoundation\\Request",
+            "@App\\Repository\\UserRepository",
+            "@Symfony\\Component\\DependencyInjection\\ContainerInterface"
+        ]
+        tags: ['controller.service_arguments']
+
+    Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface:
+        class: Symfony\Component\PasswordHasher\Hasher\UserPasswordHasher
+        public: true
+
+    App\Security\EntryPontAuth:
+        class: App\Security\EntryPointAuth
+
+    App\Entity\User:
+        arguments: [
+            "@Symfony\\Component\\PasswordHasher\\Hasher\\UserPasswordHasherInterface"
+        ]
