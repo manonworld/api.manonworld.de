@@ -58,7 +58,11 @@ class RegisterController extends AbstractController
             return $this->json($errors, Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        $savedUser = $this->repo->save($user);
+        try {
+            $savedUser = $this->repo->save($user);
+        } catch (\Exception) {
+            return $this->json(['error' => 'user exists'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
 
         $this->denorm['groups'] = ['read'];
 
