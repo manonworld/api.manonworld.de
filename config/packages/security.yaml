@@ -50,6 +50,7 @@ security:
             custom_authenticators: 
                 - App\Security\TokenAuthenticator
             entry_point: App\Security\EntryPointAuth
+            stateless: true
 
     access_control:
         # - { path: ^/admin, roles: ROLE_ADMIN }
