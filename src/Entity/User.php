@@ -35,6 +35,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @Assert\Email(
      *     message = "The email '{{ value }}' is not a valid email."
      * )
+     * @Assert\NotBlank
      * @Groups({"read", "write"})
      */
     private $email;
@@ -53,6 +54,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *      match=true,
      *      message="Password Must Be Alphanumeric"
      * )
+     * @Assert\NotBlank
      * @Assert\NotCompromisedPassword
      * @Groups("write")
      */
@@ -159,7 +161,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @see PasswordAuthenticatedUserInterface
      * @Groups("write")
      */
-    public function getPassword(): string
+    public function getPassword(): ?string
     {
         return $this->password;
     }
