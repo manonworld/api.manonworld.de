@@ -71,6 +71,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private UserPasswordHasherInterface $hasher;
 
     /**
+     * @ORM\Column(type="datetime_immutable")
+     */
+    private $created_at;
+
+    /**
+     * @ORM\Column(type="datetime_immutable", nullable=true)
+     */
+    private $updated_at;
+
+    /**
      * @param UserPasswordHasherInterface $hasher
      */
     public function __construct(UserPasswordHasherInterface $hasher)
@@ -198,5 +208,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->created_at;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function setCreatedAt(): self
+    {
+        $this->created_at = new \DateTimeImmutable;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updated_at;
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function setUpdatedAt(): self
+    {
+        $this->updated_at = new \DateTimeImmutable;
+
+        return $this;
     }
 }
