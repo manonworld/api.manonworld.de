@@ -7,36 +7,30 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use App\Entity\User;
-use App\Repository\UserRepository;
+use App\Service\UserCreator;
+use App\Exception\ValidationException;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class RegisterController extends AbstractController
 {
-    
-    private SerializerInterface $serializer;
-    private ValidatorInterface $validator;
+
     private Request $request;
-    private UserRepository $repo;
     protected $container;
+    private UserCreator $creator;
     private array $denorm;
 
     public function __construct(
-        ValidatorInterface $validator, 
-        SerializerInterface $serializer,
-        Request $request,
-        UserRepository $repo,
-        ContainerInterface $container
+        Request $request, 
+        ContainerInterface $container,
+        UserCreator $creator
     ){
-        $this->serializer   = $serializer;
-        $this->validator    = $validator;
         $this->request      = $request;
-        $this->repo         = $repo;
         $this->container    = $container;
+        $this->creator      = $creator;
 
         $this->setDenorm();
     }
@@ -47,27 +41,17 @@ class RegisterController extends AbstractController
     public function register(): JsonResponse
     {
         $data = $this->request->getContent();
-
-        $this->denorm['groups'] = ['write'];
-
-        $user = $this->serializer->deserialize($data, User::class, 'json', $this->denorm);
-
-        $errors = $this->validator->validate($user);
-
-        if ( count( $errors ) ) {
-            return $this->json($errors, Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
+        
         try {
-            $savedUser = $this->repo->save($user);
+            $result = $this->creator->create($this->denorm, $data);
+        } catch (ValidationException $e) {
+            return $this->json($e->getViolations(), $e->getCode());
+        } catch (UniqueConstraintViolationException) {
+            return $this->json(['error' => 'USER_EXISTS'], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (\Exception) {
-            return $this->json(['error' => 'user exists'], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->json(['error' => 'SERVER_ERROR'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-        $this->denorm['groups'] = ['read'];
-
-        $result = $this->serializer->serialize($savedUser, 'json', $this->denorm);
-
+        
         return JsonResponse::fromJsonString($result, Response::HTTP_CREATED);
     }
 

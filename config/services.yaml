@@ -31,14 +31,19 @@ services:
             ["@Symfony\\Component\\Serializer\\Encoder\\JsonEncoder"]
         ]
 
+    App\Services\UserCreator:
+        arguments: [
+            "@App\\Repository\\UserRepository",
+            "@Symfony\\Component\\Serializer\\SerializerInterface",
+            "@Symfony\\Component\\Validator\\Validator\\ValidatorInterface"
+        ]
+
     App\Controller\RegisterController:
         public: true
         arguments: [
-            "@Symfony\\Component\\Validator\\Validator\\ValidatorInterface",
-            "@Symfony\\Component\\Serializer\\SerializerInterface",
             "@Symfony\\Component\\HttpFoundation\\Request",
-            "@App\\Repository\\UserRepository",
-            "@Symfony\\Component\\DependencyInjection\\ContainerInterface"
+            "@Symfony\\Component\\DependencyInjection\\ContainerInterface",
+            "@App\\Service\\UserCreator"
         ]
         tags: ['controller.service_arguments']
 
