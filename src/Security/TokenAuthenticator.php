@@ -2,28 +2,29 @@
 
 namespace App\Security;
 
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
+use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
+use Symfony\Component\Security\Http\Authenticator\Passport\PassportInterface;
+use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
-use Symfony\Component\Security\Http\Authenticator\Passport\PassportInterface;
-use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
-use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
+use App\Security\CredentialsFactory;
 use App\Repository\UserRepository;
-use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
-use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordCredentials;
+use App\Entity\User;
 
 class TokenAuthenticator extends AbstractAuthenticator
 {
 
     private UserRepository $repo;
+    private CredentialsFactory $credsFactory;
 
-    public function __construct(UserRepository $repo)
+    public function __construct(UserRepository $repo, CredentialsFactory $credsFactory)
     {
-        $this->repo = $repo;
+        $this->repo         = $repo;
+        $this->credsFactory = $credsFactory;
     }
 
     public function supports(Request $request): ?bool
@@ -36,25 +37,33 @@ class TokenAuthenticator extends AbstractAuthenticator
         $apiToken = $request->headers->get('X-AUTH-TOKEN');
 
         if (null === $apiToken) {
-            // The token header was empty, authentication fails with HTTP Status
-            // Code 401 "Unauthorized"
             throw new CustomUserMessageAuthenticationException('No API token provided');
         }
 
         $content    = json_decode($request->getContent());
-        $email      = $content->email;
-        $password   = $content->password;
+        $user = $this->getUserByToken($apiToken);
 
-        $credentials = new PasswordCredentials($password);
+        if ( ! $user ) {
+            throw new CustomUserMessageAuthenticationException('Invalid API Token');
+        }
 
-        return new Passport(
-            new UserBadge($email, function (  ) use ( $apiToken ) {
-                return $this->repo->findOneBy([
-                    'apiToken'  => $apiToken
-                ]);
-            }),
-            $credentials
-        );
+        if ( ! isset( $content->email ) || ! isset( $content->password ) ) {
+            $email = $user->getEmail();
+            
+            return $this->credsFactory->getCredentials('custom', $user, $email, $apiToken);
+        } else {
+            $email      = $content->email;
+            $password   = $content->password;
+
+            return $this->credsFactory->getCredentials('password', $user, $email, $password);
+        }
+    }
+
+    private function getUserByToken(string $apiToken): ?User
+    {
+        return $this->repo->findOneBy([
+            'apiToken'  => $apiToken
+        ]);
     }
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
