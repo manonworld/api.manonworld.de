@@ -48,7 +48,7 @@ class RegisterController extends AbstractController
             return $this->json($e->getViolations(), $e->getCode());
         } catch (UniqueConstraintViolationException) {
             return $this->json(['error' => 'USER_EXISTS'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        } catch (\Exception) {
+        } catch (\Exception $e) {
             return $this->json(['error' => 'SERVER_ERROR'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
         
