@@ -35,6 +35,11 @@ class AbstractEntity
      */
     private $updated_at;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $is_deleted = false;
+
 
     public function getCreatedAt(): ?\DateTimeImmutable
     {
@@ -62,6 +67,18 @@ class AbstractEntity
     public function setUpdatedAt(): self
     {
         $this->updated_at = new \DateTimeImmutable;
+
+        return $this;
+    }
+
+    public function getIsDeleted(): ?bool
+    {
+        return $this->is_deleted;
+    }
+
+    public function setIsDeleted(bool $is_deleted): self
+    {
+        $this->is_deleted = $is_deleted;
 
         return $this;
     }
