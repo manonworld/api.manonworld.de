@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use App\Entity\AbstractEntity;
@@ -65,11 +67,17 @@ class User extends AbstractEntity implements UserInterface, PasswordAuthenticate
     private UserPasswordHasherInterface $hasher;
 
     /**
+     * @ORM\OneToMany(targetEntity=Book::class, mappedBy="user", orphanRemoval=true)
+     */
+    private $books;
+
+    /**
      * @param UserPasswordHasherInterface $hasher
      */
     public function __construct(UserPasswordHasherInterface $hasher)
     {
         $this->hasher = $hasher;
+        $this->books = new ArrayCollection();
     }
 
     public function getId(): ?UuidInterface
@@ -192,5 +200,35 @@ class User extends AbstractEntity implements UserInterface, PasswordAuthenticate
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    /**
+     * @return Collection|Book[]
+     */
+    public function getBooks(): Collection
+    {
+        return $this->books;
+    }
+
+    public function addBook(Book $book): self
+    {
+        if (!$this->books->contains($book)) {
+            $this->books[] = $book;
+            $book->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBook(Book $book): self
+    {
+        if ($this->books->removeElement($book)) {
+            // set the owning side to null (unless already changed)
+            if ($book->getUser() === $this) {
+                $book->setUser(null);
+            }
+        }
+
+        return $this;
     }
 }

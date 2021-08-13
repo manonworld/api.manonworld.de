@@ -15,7 +15,7 @@ class BookController extends AbstractController
 
     public function __construct(BookRepository $repo)
     {
-        $this->repo     = $repo;
+        $this->repo = $repo;
     }
 
     /**
