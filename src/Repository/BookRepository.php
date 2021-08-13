@@ -19,6 +19,20 @@ class BookRepository extends ServiceEntityRepository
         parent::__construct($registry, Book::class);
     }
 
+    /**
+     * Persists New Book to the DB
+     * 
+     * @param Book $user
+     * @return Book
+     */
+    public function save(Book $book): Book
+    {
+        $this->_em->persist($book);
+        $this->_em->flush();
+
+        return $book;
+    }
+
     // /**
     //  * @return Book[] Returns an array of Book objects
     //  */

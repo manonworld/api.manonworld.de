@@ -2,21 +2,22 @@
 
 namespace App\Service;
 
+use App\Entity\Book;
 use App\Entity\User;
-use App\Repository\UserRepository;
+use App\Repository\BookRepository;
 use App\Exception\ValidationException;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
-class UserCreator
+class BookCreator
 {
-
-    private UserRepository $repo;
+    private BookRepository $repo;
     private SerializerInterface $serializer;
     private ValidatorInterface $validator;
 
     public function __construct(
-        UserRepository $repo, 
+        BookRepository $repo, 
         SerializerInterface $serializer, 
         ValidatorInterface $validator
     ){
@@ -24,24 +25,19 @@ class UserCreator
         $this->serializer   = $serializer;
         $this->validator    = $validator;
     }
-    
-    public function create(array $denorm, string $data)
+
+    public function create(User $user, string $data)
     {
-        $denorm['groups'] = ['write'];
+        $book = $this->serializer->deserialize($data, Book::class, 'json');
+        $book->setUser($user);
 
-        $user = $this->serializer->deserialize($data, User::class, 'json', $denorm);
-
-        $errors = $this->validator->validate($user);
-
-        if ( count( $errors ) ) {
+        $errors = $this->validator->validate($book);
+        if ( count($errors) ) {
             throw (new ValidationException)->setViolations($errors);
         }
 
-        $savedUser = $this->repo->save($user);
+        $createdBook = $this->repo->save($book);
 
-        $denorm['groups'] = ['read'];
-
-        return $this->serializer->serialize($savedUser, 'json', $denorm);
+        return $this->serializer->serialize($createdBook, 'json');
     }
-
 }

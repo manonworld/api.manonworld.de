@@ -2,13 +2,15 @@
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use App\Entity\Book;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use App\Entity\AbstractEntity;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -68,6 +70,7 @@ class User extends AbstractEntity implements UserInterface, PasswordAuthenticate
 
     /**
      * @ORM\OneToMany(targetEntity=Book::class, mappedBy="user", orphanRemoval=true)
+     * @Ignore()
      */
     private $books;
 
@@ -78,11 +81,6 @@ class User extends AbstractEntity implements UserInterface, PasswordAuthenticate
     {
         $this->hasher = $hasher;
         $this->books = new ArrayCollection();
-    }
-
-    public function getId(): ?UuidInterface
-    {
-        return $this->id;
     }
 
     public function getEmail(): ?string
