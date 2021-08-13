@@ -9,6 +9,7 @@ use Ramsey\Uuid\UuidInterface;
 use Doctrine\ORM\Mapping\MappedSuperclass;
 use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Validator\Constraints as Assert;
+use Ramsey\Uuid\Lazy\LazyUuidFromString;
 
 /**
  * @MappedSuperclass
@@ -50,8 +51,14 @@ class AbstractEntity
     private $dateFormat = 'Y-m-d\TH:i:s\Z';
 
 
-    public function getId(): ?string
+    public function getId(): string|LazyUuidFromString|null
     {
+        if ( is_string( $this->id ) )
+            return $this->id;
+            
+        if ( $this->id instanceof LazyUuidFromString )
+            return $this->id->toString();
+
         return $this->id;
     }
 
