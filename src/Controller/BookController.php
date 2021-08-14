@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Exception\UnauthorizedException;
 use App\Exception\ValidationException;
 use App\Repository\BookRepository;
 use App\Service\BookCreator;
@@ -90,8 +91,14 @@ class BookController extends AbstractController
      */
     public function delete(Book $book)
     {
-        $this->deleter->delete($book);
-
+        $user = $this->getUser();
+        
+        try {
+            $this->deleter->delete( $book, $user );
+        } catch ( UnauthorizedException $e ) {
+            return $this->json( ['error' => $e->getMessage()], $e->getCode() );
+        }
+        
         $data = ['status' => 'OK', 'message' => 'DELETED'];
 
         return new JsonResponse($data, Response::HTTP_NO_CONTENT);
@@ -110,6 +117,8 @@ class BookController extends AbstractController
         try {
             $result = $this->updater->update($book, $request->getContent());
         } catch (ValidationException $e) {
+            return $this->json($e->getViolations(), $e->getCode());
+        } catch (UnauthorizedException $e) {
             return $this->json($e->getViolations(), $e->getCode());
         } catch (\Exception $e) {
             return $this->json(['error' => 'SERVER_ERROR'], Response::HTTP_INTERNAL_SERVER_ERROR);
