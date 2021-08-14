@@ -52,27 +52,33 @@ class User extends AbstractEntity implements UserInterface, PasswordAuthenticate
      * )
      * @Assert\NotBlank
      * @Assert\NotCompromisedPassword
-     * @Groups("write")
+     * @Groups({"write"})
      */
     private $password;
 
     /**
      * @var string The API token used for auth
      * @ORM\Column(type="string", unique=true)
-     * @Groups("read")
+     * @Groups("read", "write")
      */
     private $apiToken;
 
     /**
      * Mainly used to hash the password in the prePersist event
+     * @Ignore()
      */
     private UserPasswordHasherInterface $hasher;
 
     /**
      * @ORM\OneToMany(targetEntity=Book::class, mappedBy="user", orphanRemoval=true)
-     * @Ignore()
      */
     private $books;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     * @Groups({"read", "write"})
+     */
+    private $image;
 
     /**
      * @param UserPasswordHasherInterface $hasher
@@ -184,6 +190,7 @@ class User extends AbstractEntity implements UserInterface, PasswordAuthenticate
      * Returning a salt is only needed, if you are not using a modern
      * hashing algorithm (e.g. bcrypt or sodium) in your security.yaml.
      *
+     * @Ignore()
      * @see UserInterface
      */
     public function getSalt(): ?string
@@ -226,6 +233,18 @@ class User extends AbstractEntity implements UserInterface, PasswordAuthenticate
                 $book->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): self
+    {
+        $this->image = $image;
 
         return $this;
     }
