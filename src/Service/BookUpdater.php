@@ -4,6 +4,7 @@ namespace App\Service;
 
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use App\Exception\UnauthorizedException;
 use App\Exception\ValidationException;
 use App\Repository\BookRepository;
 use App\Entity\Book;
@@ -24,8 +25,11 @@ class BookUpdater
         $this->validator    = $validator;
     }
 
-    public function update(Book $book, string $data)
+    public function update(Book $book, string $data, User $user)
     {
+        if ( $book->getUser() !== $user )
+            throw new UnauthorizedException;
+        
         $content = json_decode($data);
 
         if ( isset( $content->isbn ) )
