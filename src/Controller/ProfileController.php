@@ -18,7 +18,7 @@ class ProfileController extends AbstractController
         $this->serializer = $serializer;
     }
 
-    #[Route('/profile', name: 'profile', methods: ["GET"])]
+    #[Route('/profile', name: 'get_profile', methods: ["GET"])]
     public function index(): JsonResponse
     {
         $user = $this->getUser();
@@ -28,9 +28,7 @@ class ProfileController extends AbstractController
         return JsonResponse::fromJsonString($result);
     }
     
-    /**
-     * @Route("/profile", name="update_profile", methods={"PUT"})
-     */
+    #[Route("/profile", name: "update_profile", methods: ["PUT"])]
     public function update(): JsonResponse
     {
         echo 2;
