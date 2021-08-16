@@ -41,7 +41,7 @@ class TokenAuthenticator extends AbstractAuthenticator
         }
 
         $content    = json_decode($request->getContent());
-        $user = $this->getUserByToken($apiToken);
+        $user       = $this->getUserByToken($apiToken);
 
         if ( ! $user ) {
             throw new CustomUserMessageAuthenticationException('Invalid API Token');
