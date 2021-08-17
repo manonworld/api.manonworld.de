@@ -14,6 +14,7 @@ use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Normalizer\DataUriNormalizer;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\Validator\Constraints as SecurityAssert;
@@ -85,8 +86,8 @@ class User extends AbstractEntity implements UserInterface, PasswordAuthenticate
      */
     public function __construct(UserPasswordHasherInterface $hasher)
     {
-        $this->hasher = $hasher;
-        $this->books = new ArrayCollection();
+        $this->hasher       = $hasher;
+        $this->books        = new ArrayCollection;
     }
 
     public function getEmail(): ?string
@@ -237,12 +238,34 @@ class User extends AbstractEntity implements UserInterface, PasswordAuthenticate
         return $this;
     }
 
-    public function getImage(): ?string
+    /**
+     * @ORM\PrePersist
+     */
+    public function convertImageToBase64String(): void
+    {
+        $normalizer = new DataUriNormalizer;
+        
+        $this->image = $normalizer->normalize( $this->image );
+    }
+
+    /**
+     * @ORM\PreUpdate
+     */
+    public function convertImageToBase64StringIfNot(): void
+    {
+        if ( $this->image instanceof \SplFileObject )
+
+            $normalizer = new DataUriNormalizer;
+
+            $this->image = $normalizer->normalize( $this->image );
+    }
+
+    public function getImage(): string|\SplFileObject|null
     {
         return $this->image;
     }
 
-    public function setImage(?string $image): self
+    public function setImage(string|\SplFileObject|null $image): self
     {
         $this->image = $image;
 

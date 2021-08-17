@@ -53,5 +53,5 @@ security:
             stateless: true
 
     access_control:
-        - { path: ^/profile, roles: ROLE_USER, methods: [GET, PUT] }
+        - { path: ^/profile, roles: ROLE_USER }
         - { path: ^/books, roles: ROLE_USER }
