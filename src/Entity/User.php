@@ -243,9 +243,11 @@ class User extends AbstractEntity implements UserInterface, PasswordAuthenticate
      */
     public function convertImageToBase64String(): void
     {
-        $normalizer = new DataUriNormalizer;
-        
-        $this->image = $normalizer->normalize( $this->image );
+        if ( $this->image ) {
+            $normalizer = new DataUriNormalizer;
+            
+            $this->image = $normalizer->normalize( $this->image );
+        }
     }
 
     /**
@@ -253,11 +255,12 @@ class User extends AbstractEntity implements UserInterface, PasswordAuthenticate
      */
     public function convertImageToBase64StringIfNot(): void
     {
-        if ( $this->image instanceof \SplFileObject )
+        if ( $this->image instanceof \SplFileObject ) {
 
             $normalizer = new DataUriNormalizer;
 
             $this->image = $normalizer->normalize( $this->image );
+        }
     }
 
     public function getImage(): string|\SplFileObject|null
