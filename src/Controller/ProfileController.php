@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\SerializerInterface;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use App\Service\UserUpdater;
 use App\Exception\ValidationException;
 
@@ -44,6 +45,8 @@ class ProfileController extends AbstractController
             $user = $this->updater->update( $content, $user );
         } catch ( ValidationException $e ) {
             return $this->json($e->getViolations(), $e->getCode());
+        }catch (UniqueConstraintViolationException) {
+            return $this->json(['error' => 'USER_EXISTS'], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch ( NotNormalizableValueException ) {
             return $this->json(['error' => 'Invalid Image'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
