@@ -47,6 +47,24 @@ services:
         ]
         tags: ['controller.service_arguments']
 
+    Symfony\Component\Serializer\Normalizer\DataUriNormalizer:
+        public: true
+
+    App\Service\UserUpdater:
+        arguments: [
+            "@App\\Repository\\UserRepository",
+            "@Symfony\\Component\\Validator\\Validator\\ValidatorInterface",
+            "@Symfony\\Component\\Serializer\\Normalizer\\DataUriNormalizer"
+        ]
+
+    App\Controller\ProfileController:
+        public: true
+        arguments: [
+            "@Symfony\\Component\\Serializer\\SerializerInterface",
+            "@App\\Service\\UserUpdater"
+        ]
+        tags: ['controller.service_arguments']
+
     Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface:
         class: Symfony\Component\PasswordHasher\Hasher\UserPasswordHasher
         public: true
