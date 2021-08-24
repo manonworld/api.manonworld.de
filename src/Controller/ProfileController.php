@@ -45,7 +45,7 @@ class ProfileController extends AbstractController
             $user = $this->updater->update( $content, $user );
         } catch ( ValidationException $e ) {
             return $this->json($e->getViolations(), $e->getCode());
-        }catch (UniqueConstraintViolationException) {
+        }catch ( UniqueConstraintViolationException ) {
             return $this->json(['error' => 'USER_EXISTS'], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch ( NotNormalizableValueException ) {
             return $this->json(['error' => 'Invalid Image'], Response::HTTP_UNPROCESSABLE_ENTITY);
