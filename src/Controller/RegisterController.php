@@ -14,6 +14,7 @@ use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 
 class RegisterController extends AbstractController
 {
@@ -48,6 +49,8 @@ class RegisterController extends AbstractController
             return $this->json($e->getViolations(), $e->getCode());
         } catch (UniqueConstraintViolationException) {
             return $this->json(['error' => 'USER_EXISTS'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (NotEncodableValueException) {
+            return $this->json(['error' => 'INVALID_REQUEST'], Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (\Exception $e) {
             return $this->json(['error' => 'SERVER_ERROR'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
